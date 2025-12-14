@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "prebuild": "node scripts/update-version.js",
     "build": "next build",
     "build:fresh": "npm run prebuild && npm run build",

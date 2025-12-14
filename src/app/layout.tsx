@@ -36,7 +36,7 @@ export default function RootLayout({
       </head>
       <body>
         <GlobalStyle />
-        <CacheManager />
+        {/* <CacheManager /> */}
         {}
         <div className="jwk-watermark" aria-hidden="true">
           JWK-Wedding-{watermarkId}-NonCommercial

@@ -4,6 +4,12 @@ import { weddingConfig } from "../src/config/wedding-config";
 import StyledComponentsRegistry from "../src/lib/registry";
 import { GlobalStyle } from "../src/styles/globalStyles";
 import "./globals.css";
+import ClientOnly from "../src/components/ClientOnly";
+import CacheManager from "../src/components/CacheManager";
+
+<ClientOnly>
+  <CacheManager />
+</ClientOnly>
 
 export default function RootLayout({
   children,

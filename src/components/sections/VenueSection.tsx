@@ -42,118 +42,111 @@ const VenueSection = ({ bgColor = 'white' }: VenueSectionProps) => {
     }
   };
   
-  // 디버깅 정보 출력
-  useEffect(() => {
-    const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID || '';
-    const debug = `클라이언트 ID: ${clientId.substring(0, 3)}...`;
-    setDebugInfo(debug);
-  }, []);
-  
-  // 네이버 지도 API 스크립트 동적 로드
-  useEffect(() => {
-    const loadNaverMapScript = () => {
-      if (window.naver && window.naver.maps) {
-        setMapLoaded(true);
+  // ✅ 네이버 지도 로드 + 초기화 (기존 3개 useEffect 전부 교체)
+useEffect(() => {
+  const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID!;
+
+  // 디버그 표시(원래 있던 debugInfo 유지)
+  const debug = clientId
+    ? `클라이언트 ID: ${clientId.substring(0, 3)}...`
+    : `클라이언트 ID: (undefined)`;
+  setDebugInfo(debug);
+
+  // ✅ env 없으면 여기서 끝 (인증 실패 UI 대신 staticMap으로)
+  if (!clientId) {
+    console.error("NEXT_PUBLIC_NAVER_MAP_CLIENT_ID is undefined. Check .env.local and restart dev server.");
+    setMapError(true);
+    return;
+  }
+
+  let cancelled = false;
+
+  const loadScript = () =>
+    new Promise<void>((resolve, reject) => {
+      if (typeof window === "undefined") return reject(new Error("Not in browser"));
+
+      // 이미 로드됨
+      if (window.naver?.maps) return resolve();
+
+      // 중복 삽입 방지
+      const existing = document.getElementById("naver-maps-sdk") as HTMLScriptElement | null;
+      if (existing) {
+        const timer = setInterval(() => {
+          if (window.naver?.maps) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 50);
+
+        setTimeout(() => {
+          clearInterval(timer);
+          if (!window.naver?.maps) reject(new Error("Naver maps load timeout"));
+        }, 8000);
+
         return;
       }
-      
-      const script = document.createElement('script');
-      script.async = true;
-      // 네이버 지도 API는 geocoder를 별도로 로드해야 합니다
-      script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`;
-      script.onload = () => {
-        console.log('네이버 지도 스크립트 로드 완료');
-        setMapLoaded(true);
-      };
-      script.onerror = (error) => {
-        console.error('네이버 지도 스크립트 로드 실패:', error);
-        setMapError(true);
-      };
-      document.head.appendChild(script);
-      
-      // 인증 오류 확인을 위한 타임아웃 설정
-      setTimeout(() => {
-        if (document.querySelector('div[style*="position: absolute; z-index: 100000000"]')) {
-          console.log('네이버 지도 인증 오류 발견');
-          setMapError(true);
-        }
-      }, 3000);
-    };
 
-    loadNaverMapScript();
-    
-    // 컴포넌트 언마운트 시 맵 제거
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.innerHTML = '';
-      }
-    };
-  }, []);
-  
-  // 네이버 지도 초기화
-  useEffect(() => {
-    if (!mapLoaded || !mapRef.current || mapError) return;
-    
-    const initMap = () => {
-      try {
-        console.log('네이버 지도 초기화 시작');
-        
-        // 기본 좌표 (서울 시청) - 주소 검색 전 기본값
-        const defaultLocation = new window.naver.maps.LatLng(37.5666805, 126.9784147);
-        
-        // 지도 생성
-        const map = new window.naver.maps.Map(mapRef.current, {
-          center: defaultLocation,
-          zoom: parseInt(weddingConfig.venue.mapZoom, 10) || 15,
-          zoomControl: true,
-          zoomControlOptions: {
-            position: window.naver.maps.Position.RIGHT_TOP
-          }
-        });
-        
-        console.log('네이버 지도 객체 생성 성공');
-        
-        // wedding-config.ts에서 좌표 가져오기
-        const venueLocation = new window.naver.maps.LatLng(
-          weddingConfig.venue.coordinates.latitude, 
-          weddingConfig.venue.coordinates.longitude
-        );
-        
-        // 마커 생성
-        const marker = new window.naver.maps.Marker({
-          position: venueLocation,
-          map: map
-        });
-        
-        // 인포윈도우 생성
-        const infoWindow = new window.naver.maps.InfoWindow({
-          content: `<div style="padding:10px;min-width:150px;text-align:center;font-size:14px;"><strong>${weddingConfig.venue.name}</strong></div>`
-        });
-        
-        // 마커 클릭 시 인포윈도우 표시
-        infoWindow.open(map, marker);
-        
-        // 지도 중심 이동
-        map.setCenter(venueLocation);
-        console.log('네이버 지도 초기화 완료');
-        
-        // 인증 오류를 감지하기 위한 추가 확인
-        setTimeout(() => {
-          const errorDiv = document.querySelector('div[style*="position: absolute; z-index: 100000000"]');
-          if (errorDiv) {
-            console.log('인증 오류 감지됨');
-            setMapError(true);
-          }
-        }, 1000);
-        
-      } catch (error) {
-        console.error('네이버 지도 초기화 오류:', error);
-        setMapError(true);
-      }
-    };
-    
-    initMap();
-  }, [mapLoaded, mapError]);
+      const script = document.createElement("script");
+      script.id = "naver-maps-sdk";
+      script.async = true;
+      script.defer = true;
+      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`;
+
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load Naver maps script"));
+
+      document.head.appendChild(script);
+    });
+
+  const init = async () => {
+    try {
+      await loadScript();
+      if (cancelled) return;
+
+      if (!mapRef.current) return;
+
+      console.log("네이버 지도 초기화 시작");
+
+      const naver = window.naver;
+      const venueLocation = new naver.maps.LatLng(
+        weddingConfig.venue.coordinates.latitude,
+        weddingConfig.venue.coordinates.longitude
+      );
+
+      const map = new naver.maps.Map(mapRef.current, {
+        center: venueLocation,
+        zoom: parseInt(weddingConfig.venue.mapZoom, 10) || 15,
+        zoomControl: true,
+        zoomControlOptions: { position: naver.maps.Position.RIGHT_TOP },
+      });
+
+      new naver.maps.Marker({
+        position: venueLocation,
+        map,
+      });
+
+      const infoWindow = new naver.maps.InfoWindow({
+        content: `<div style="padding:10px;min-width:150px;text-align:center;font-size:14px;"><strong>${weddingConfig.venue.name}</strong></div>`,
+      });
+      infoWindow.open(map, new naver.maps.Marker({ position: venueLocation, map }));
+
+      setMapLoaded(true);
+      setMapError(false);
+
+      console.log("네이버 지도 초기화 완료");
+    } catch (e) {
+      console.error("네이버 지도 로드/초기화 실패:", e);
+      setMapError(true);
+    }
+  };
+
+  init();
+
+  return () => {
+    cancelled = true;
+    if (mapRef.current) mapRef.current.innerHTML = "";
+  };
+}, []);
   
   // 정적 지도 이미지 렌더링 (API 인증 실패 시 대체 콘텐츠)
   const renderStaticMap = () => {
