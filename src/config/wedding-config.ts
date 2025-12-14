@@ -1,5 +1,35 @@
 const uniqueIdentifier = "JWK-WEDDING-TEMPLATE-V1";
+interface ShuttleInfo {
+  location: string;
+  departureTime: string;
+  contact: {
+    name: string;
+    tel: string;
+  };
+}
 
+interface VenueConfig {
+  name: string;
+  address: string;
+  tel: string;
+  naverMapId: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  placeId: string;
+  mapZoom: string;
+  mapNaverCoordinates: string;
+  transportation: {
+    subway: string;
+    bus: string;
+  };
+  parking: string;
+
+  // ✅ optional
+  groomShuttle?: ShuttleInfo;
+  brideShuttle?: ShuttleInfo;
+}
 // 갤러리 레이아웃 타입 정의
 type GalleryLayout = "scroll" | "grid";
 type GalleryPosition = "middle" | "bottom";
@@ -61,7 +91,9 @@ export const weddingConfig = {
       subway: "지하철 7호선 고속터미널역 5번 출구에서 도보 5분",
       bus: "간선\n 405, 740\n지선\n 5413\n마을\n 서초13, 서초14, 서초21",
     },
-    parking: "건물 지하 주차장 이용 가능 (2시간 무료)",
+    parking: "건물 지하 주차장 이용 가능 (2시간 무료)", 
+    
+    
     // 신랑측 배차 안내
     // groomShuttle: {
     //   location: "신랑측 배차 출발지",
@@ -80,7 +112,7 @@ export const weddingConfig = {
     //     tel: "010-9876-5432"
     //   }
     // }
-  },
+  } as VenueConfig,
 
   // 갤러리
   gallery: {
