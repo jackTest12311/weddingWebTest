@@ -40,7 +40,7 @@ export const weddingConfig = {
     month: 5,
     day: 25,
     hour: 11,
-    // minute: 00,
+    minute: 0,
     displayDate: "2026.05.25 SAT AM 11:00",
   },
 
