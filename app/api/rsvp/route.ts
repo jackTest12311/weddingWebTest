@@ -87,16 +87,16 @@ export async function POST(request: Request) {
     // 웹훅 URL이 제공된 경우에만 Slack으로 메시지 전송
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
 
-if (!webhookUrl) {
-  console.log('Slack 웹훅 URL이 설정되지 않았습니다. (SLACK_WEBHOOK_URL)');
-  return NextResponse.json({ success: true });
-}
+    if (!webhookUrl) {
+      console.log('Slack 웹훅 URL이 설정되지 않았습니다. (SLACK_WEBHOOK_URL)');
+      return NextResponse.json({ success: true });
+    }
 
-await fetch(webhookUrl, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(slackMessage),
-});
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(slackMessage),
+    });
     
     return NextResponse.json({ success: true });
   } catch (error) {

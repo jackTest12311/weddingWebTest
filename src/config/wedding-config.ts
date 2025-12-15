@@ -197,10 +197,8 @@ export const weddingConfig = {
     showMealOption: true, // 식사 여부 입력 옵션 표시 여부
   },
 
-  // 슬랙 알림 설정
   slack: {
-    webhookUrl: process.env.SLACK_WEBHOOK_URL || "",
     channel: "#wedding-response",
-    compactMessage: true, // 슬랙 메시지를 간결하게 표시
+    compactMessage: true,
   },
 }; 
