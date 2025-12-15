@@ -85,27 +85,18 @@ export async function POST(request: Request) {
     });
     
     // 웹훅 URL이 제공된 경우에만 Slack으로 메시지 전송
-    if (weddingConfig.slack.webhookUrl) {
-      try {
-        const slackResponse = await fetch(weddingConfig.slack.webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(slackMessage),
-        });
-        
-        if (!slackResponse.ok) {
-          console.error(`Slack API 오류: ${slackResponse.statusText}`);
-        }
-      } catch (error) {
-        console.error('Slack 전송 오류:', error);
-        // Slack 전송이 실패하더라도 클라이언트에게는 성공 응답 반환
-      }
-    } else {
-      console.log('Slack 웹훅 URL이 설정되지 않았습니다.');
-      console.log('RSVP 데이터:', data);
-    }
+    const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+
+if (!webhookUrl) {
+  console.log('Slack 웹훅 URL이 설정되지 않았습니다. (SLACK_WEBHOOK_URL)');
+  return NextResponse.json({ success: true });
+}
+
+await fetch(webhookUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(slackMessage),
+});
     
     return NextResponse.json({ success: true });
   } catch (error) {
