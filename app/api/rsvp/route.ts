@@ -89,6 +89,8 @@ export async function POST(request: Request) {
 
     if (!webhookUrl) {
       console.log('Slack 웹훅 URL이 설정되지 않았습니다. (SLACK_WEBHOOK_URL)');
+      console.log("VERCEL_ENV =", process.env.VERCEL_ENV);
+console.log("has SLACK_WEBHOOK_URL =", !!process.env.SLACK_WEBHOOK_URL);
       return NextResponse.json({ success: true });
     }
 
@@ -106,4 +108,5 @@ export async function POST(request: Request) {
       message: 'RSVP 처리 중 오류가 발생했습니다.' 
     }, { status: 500 });
   }
+  
 } 
