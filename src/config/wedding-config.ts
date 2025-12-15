@@ -199,7 +199,7 @@ export const weddingConfig = {
 
   // 슬랙 알림 설정
   slack: {
-    webhookUrl: process.env.NEXT_PUBLIC_SLACK_WEBHOOK_URL || "",
+    webhookUrl: process.env.SLACK_WEBHOOK_URL || "",
     channel: "#wedding-response",
     compactMessage: true, // 슬랙 메시지를 간결하게 표시
   },
