@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="ko">
       {}
       <head>
-        <link
+        {/* <link
           rel="preload"
           href="/fonts/PlayfairDisplay-Italic.ttf" 
           as="font"
@@ -28,8 +28,8 @@ export default function RootLayout({
           href="/fonts/MaruBuri-Regular.ttf" 
           as="font"
           type="font/ttf"
-          crossOrigin="anonymous"
-        />
+          crossOrigin="anonymous" */}
+        {/* /> */}
         {}
         <meta name="generator" content={`Wedding-Template-${watermarkId}`} />
         <meta name="description" content={metaDescription} />
